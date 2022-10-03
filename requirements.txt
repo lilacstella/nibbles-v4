@@ -1,0 +1,4 @@
+python-dotenv~=0.18.0
+tinydb~=4.5.0
+topggpy~=1.4.0
+Pillow~=9.2.0

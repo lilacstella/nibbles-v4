@@ -1,0 +1,7 @@
+.idea/
+__pycache__/
+
+nibbles/secrets/
+
+nibbles/db/
+!nibbles/db/characters.db
