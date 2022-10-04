@@ -1,5 +1,10 @@
+import asyncio
+from datetime import datetime, date, timedelta
+import time
+from threading import Thread
+
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from nibbles.config import guilds, discord_token
 
@@ -26,6 +31,10 @@ class Bot(commands.Bot):
         #         await self.tree.sync(guild=_id)
         #     self.synced = True
         print("bot online")
+
+        client.launch_midnight = Thread(target=launch_tasks)
+        if not client.launch_midnight.is_alive():
+            client.launch_midnight.start()
 
 
 client = Bot()
@@ -58,6 +67,20 @@ Register Discord Bot Commands
 #             .send(f"{interaction.user.mention} registration attempt, update token")
 #         msg = "The verification code failed to send, an officer has been notified and will contact you soon"
 #     await interaction.response.send_message(msg, ephemeral=True)
+
+def launch_tasks():
+    asyncio.set_event_loop(client.loop)
+    now = datetime.now()
+    midnight = datetime.combine(date.today() + timedelta(days=1), datetime.min.time()) + timedelta(hours=9)
+    tdelta = midnight - now
+    midnight_time = tdelta.total_seconds() % (24 * 3600)
+    print(f'{midnight_time / 3600} hours until tasks launch')
+    time.sleep(midnight_time)
+    daily_reset.start()
+
+@tasks.loop(hours=24)
+async def daily_reset():
+    client.get_cog('Econ').spun_today = {}
 
 @client.event
 async def on_message(message):
