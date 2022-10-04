@@ -5,6 +5,36 @@ from discord.ext import commands
 
 from nibbles.config import guilds
 
+class Reroll(discord.ui.View):
+    def __init__(self, options):
+        super().__init__()
+        self.response = None
+        label = ""
+        for choice in options: label += choice.strip() + ","
+        label = label[:-1]
+        self.reroll.label = label
+
+    @discord.ui.button(
+        style=discord.ButtonStyle.primary, custom_id="reroll", emoji="🔁"
+    )
+    async def reroll(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if button.label is None:
+            await interaction.response.defer()
+            return
+        options = button.label.split(',')
+        chosen = secrets.choice(options)
+        options.remove(chosen)
+        selected = f'__{chosen.strip()}__'
+        choice = [f'Nibbles thinks  {selected}  is the right option!', f'Why of course {selected} is the way to go!',
+                  f"Nibbles thinks {selected} is da best. It's tasty after all!",
+                  f'After consulting my degree in Mathematics, Nibbles thinks {selected} is the right choice.',
+                  f"Nibbles likes {selected} because it has the most nom noms"]
+        label = ""
+        for _cur in options: label += _cur.strip() + ","
+        label = label[:-1]
+        button.label = label
+        await interaction.response.edit_message(content=secrets.choice(choice), view=self)
+
 
 class Misc(commands.Cog):
 
@@ -22,12 +52,14 @@ class Misc(commands.Cog):
     async def choose(self, ctx: commands.Context, options: str):
         """let nibbles help you choose something"""
         choices = options.split(',')
-        selected = f'__{secrets.choice(choices).strip()}__'
-        choice = [f'Nibbles thinks  {selected}  is the right option!', f'Why of course {selected} is the way to go!',
+        chosen = secrets.choice(choices)
+        choices.remove(chosen)
+        selected = f'__{chosen.strip()}__'
+        choice = [f'Nibbles thinks  {selected}  is the right option!', f'Of course {selected} is the way to go!',
                   f"Nibbles thinks {selected} is da best. It's tasty after all!",
                   f'After consulting my degree in Mathematics, Nibbles thinks {selected} is the right choice.',
                   f"Nibbles likes {selected} because it has the most nom noms"]
-        await ctx.send(secrets.choice(choice))
+        await ctx.send(secrets.choice(choice), view=Reroll(choices))
 
     @commands.hybrid_command(
         name="size",
