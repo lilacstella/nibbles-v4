@@ -81,7 +81,7 @@ def launch_tasks():
 def daily_reset(f_stop):
     econ = client.get_cog('Econ')
     if econ is not None:
-        spun_today = {}
+        econ.spun_today = {}
     threading.Timer(60*60*24, daily_reset, [f_stop]).start()
 
 
