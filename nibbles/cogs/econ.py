@@ -15,10 +15,10 @@ class Econ(commands.Cog):
         self.client = client
 
     @commands.hybrid_command(
-        name="wheel",
+        name="spin",
         description='spin the wheel of fortune once a day!',
         with_app_command=True,
-        aliases=['spin'],
+        aliases=['wheel'],
         guilds=guilds
     )
     async def wheel(self, ctx: commands.Context):

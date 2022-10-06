@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime, date, timedelta
 import time
-from threading import Thread
+import threading
 
 import discord
 from discord.ext import commands, tasks
@@ -32,7 +32,7 @@ class Bot(commands.Bot):
         #     self.synced = True
         print("bot online")
 
-        client.launch_midnight = Thread(target=launch_tasks)
+        client.launch_midnight = threading.Thread(target=launch_tasks)
         if not client.launch_midnight.is_alive():
             client.launch_midnight.start()
 
@@ -75,12 +75,15 @@ def launch_tasks():
     tdelta = midnight - now
     midnight_time = tdelta.total_seconds() % (24 * 3600)
     print(f'{midnight_time / 3600} hours until tasks launch')
-    time.sleep(midnight_time)
-    daily_reset.start()
+    _daily_reset_stop = threading.Event()
+    threading.Timer(midnight_time, daily_reset, [_daily_reset_stop]).start()
 
-@tasks.loop(hours=24)
-async def daily_reset():
-    client.get_cog('Econ').spun_today = {}
+def daily_reset(f_stop):
+    econ = client.get_cog('Econ')
+    if econ is not None:
+        spun_today = {}
+    threading.Timer(60*60*24, daily_reset, [f_stop]).start()
+
 
 @client.event
 async def on_message(message):
