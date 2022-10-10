@@ -1,5 +1,6 @@
 import datetime
 import logging
+import time
 
 import dateparser
 import discord
@@ -25,51 +26,6 @@ scheduler = AsyncIOScheduler(
 )
 
 scheduler.start()
-
-
-def calculate(job: Job) -> str:
-    """Get trigger time from a reminder and calculate how many days,
-    hours and minutes till trigger.
-
-    Days/Minutes will not be included if 0.
-
-    Args:
-        job: The job. Can be cron, interval or normal.
-
-    Returns:
-        Returns days, hours and minutes till the reminder. Returns "Couldn't calculate time" if no job is found.
-    """
-
-    if type(job.trigger) is DateTrigger:
-        trigger_time = job.trigger.run_date
-    else:
-        trigger_time = job.next_run_time
-
-    # Get_job() returns None when it can't find a job with that ID.
-    if trigger_time is None:
-        # TODO: Change this to None and send this text where needed.
-        return "Couldn't calculate time"
-
-    # Get time and date the job will run and calculate how many days,
-    # hours and seconds.
-    countdown = trigger_time - datetime.datetime.now(tz=pytz.timezone(config_timezone))
-
-    days, hours, minutes = (
-        countdown.days,
-        countdown.seconds // 3600,
-        countdown.seconds // 60 % 60,
-    )
-
-    return ", ".join(
-        f"{x} {y}{'s' * (x != 1)}"
-        for x, y in (
-            (days, "day"),
-            (hours, "hour"),
-            (minutes, "minute"),
-        )
-        if x
-    )
-
 
 logging.basicConfig(level=logging.getLevelName(log_level))
 logging.info(
@@ -140,11 +96,11 @@ class Remind(commands.Cog):
             await interaction.response.send_message(str(e), ephemeral=True)
             return
 
-        happening_in = calculate(reminder)
+        happening_in = time.mktime(parsed_date.timetuple())
         message = (
             f"<:hi:813575402512580670> {interaction.user.display_name},"
             f" nibbles will remind you at \n"
-            f"**{run_date}** {'in' if len(happening_in) > 0 else''} {happening_in}\n"
+            f"**<t:{happening_in:.0f}:F>** <t:{happening_in:.0f}:R>\n"
             f"about: \n**{what}**."
         )
 
