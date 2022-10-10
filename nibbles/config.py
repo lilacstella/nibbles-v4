@@ -4,7 +4,7 @@ from pathlib import Path
 
 from dotenv import dotenv_values
 
-to_sync = True
+to_sync = False
 
 
 # guild for testing

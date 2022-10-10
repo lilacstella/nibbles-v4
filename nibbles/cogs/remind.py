@@ -1,14 +1,10 @@
-import datetime
 import logging
-import time
 
 import dateparser
 import discord
 import pytz
-from apscheduler.job import Job
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.date import DateTrigger
 from discord import app_commands
 from discord.ext import commands
 from sqlalchemy import create_engine
@@ -68,7 +64,8 @@ class Remind(commands.Cog):
                 settings={
                     "TIMEZONE": config_timezone,
                     "TO_TIMEZONE": config_timezone,
-                    'PREFER_DAY_OF_MONTH': 'first'
+                    'PREFER_DAY_OF_MONTH': 'first',
+                    'RETURN_AS_TIMEZONE_AWARE': True
                     # 'PREFER_DATES_FROM': 'current_period'
                 },
             )
@@ -96,7 +93,7 @@ class Remind(commands.Cog):
             await interaction.response.send_message(str(e), ephemeral=True)
             return
 
-        happening_in = time.mktime(parsed_date.timetuple())
+        happening_in = parsed_date.timestamp()
         message = (
             f"<:hi:813575402512580670> {interaction.user.display_name},"
             f" nibbles will remind you at \n"
