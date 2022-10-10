@@ -1,7 +1,7 @@
 import datetime
 import logging
 
-import parsedatetime
+import dateparser
 import discord
 import pytz
 from apscheduler.job import Job
@@ -25,7 +25,6 @@ scheduler = AsyncIOScheduler(
 )
 
 scheduler.start()
-cal = parsedatetime.Calendar()
 
 
 def calculate(job: Job) -> str:
@@ -107,10 +106,23 @@ class Remind(commands.Cog):
             when: The message the bot should write when the reminder is triggered.
             different_channel: The channel the reminder should be sent to.
         """
-
-        parsed_date, _ = cal.parseDT(datetimeString=when, tzinfo=pytz.timezone('US/CENTRAL'))
-
-        if _ < 3:
+        try:
+            parsed_date = dateparser.parse(
+                when,
+                settings={
+                    "TIMEZONE": config_timezone,
+                    "TO_TIMEZONE": config_timezone,
+                    'PREFER_DAY_OF_MONTH': 'first'
+                    # 'PREFER_DATES_FROM': 'current_period'
+                },
+            )
+        except dateparser.SettingValidationError as e:
+            return await interaction.response.send_message(f"Timezone is possible wrong?: {e}", ephemeral=True)
+        except ValueError as e:
+            return await interaction.response.send_message(
+                f"Failed to parse date. Unknown language: {e}", ephemeral=True
+            )
+        if not parsed_date:
             return await interaction.response.send_message("Could not parse the date.", ephemeral=True)
 
         run_date = parsed_date.strftime("%Y-%m-%d %H:%M:%S")
