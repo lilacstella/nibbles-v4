@@ -56,22 +56,23 @@ def todo_embed(uid, author_name):
         return embed, todo
 
 
-class Todo(commands.Cog):
+class Todo(commands.GroupCog, group_name="todo"):
 
     def __init__(self, client):
         self.client = client
 
-    @discord.app_commands.command(description='interact with your to-do list!')
+    @discord.app_commands.command(name='ls', description='interact with your to-do list!')
     async def todo(self, interaction: discord.Interaction):
         embed, task_list = todo_embed(interaction.user.id, interaction.user.display_name)
 
-        # if embed is not None:
-        #     await interaction.response.send_message(content=f"{name}'s to-do list", embed=embed, view=box)
-        # else:
-        # await interaction.response.send_message(content=f"{name} does not have a to-do list yet!", view=box)
-        await interaction.response.send_message(content=f"test", embed=embed, view=MenuView(task_list))
+        if embed is not None:
+            await interaction.response.send_message(embed=embed, view=MenuView(task_list))
+        else:
+            await interaction.response.send_message(
+                content=f"{interaction.user.display_name} does not have a to-do list yet!"
+            )
 
-    @commands.hybrid_command(
+    @discord.app_commands.command(
         name="add",
         description='add an item to your to-do list!'
     )
@@ -91,6 +92,7 @@ class Todo(commands.Cog):
         embed, task_list = todo_embed(ctx.author.id, name)
 
         await ctx.send(content='Added to your to-do list!', embed=embed, view=MenuView(task_list))
+
 
 async def setup(client):
     await client.add_cog(Todo(client))

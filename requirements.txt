@@ -2,3 +2,8 @@ python-dotenv~=0.18.0
 tinydb~=4.5.0
 topggpy~=1.4.0
 Pillow~=9.2.0
+
+dateparser~=1.1.1
+pytz~=2022.4
+APScheduler~=3.9.1
+SQLAlchemy~=1.4.41

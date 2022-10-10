@@ -1,7 +1,11 @@
+import asyncio
 import secrets
+import threading
+from datetime import datetime
 
 import discord
 from discord.ext import commands
+
 
 from nibbles.config import guilds
 
@@ -32,7 +36,8 @@ class Reroll(discord.ui.Button):
         for _item in self.crossed:
             selected += f" ~~{_item}~~"
         self.crossed.append(chosen)
-        choice = [f'Nibbles thinks  __{selected}__  is the right option!', f'Of course __{selected}__ is the way to go!',
+        choice = [f'Nibbles thinks  __{selected}__  is the right option!',
+                  f'Of course __{selected}__ is the way to go!',
                   f"Nibbles thinks __{selected}__ is da best. It's tasty after all!",
                   f'After consulting my degree in Abstract Mathematics, Nibbles thinks __{selected}__ is the right choice.',
                   f"Nibbles likes __{selected}__ because it has the most nom noms"]
@@ -53,7 +58,6 @@ class Misc(commands.Cog):
 
     def __init__(self, client):
         self.client = client
-
     @commands.hybrid_command(
         name="choose",
         description="nibbles helps make your life decisions for you",
