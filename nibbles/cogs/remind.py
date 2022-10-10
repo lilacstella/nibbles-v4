@@ -8,7 +8,6 @@ from apscheduler.job import Job
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.date import DateTrigger
-from dateparser.conf import SettingValidationError
 from discord import app_commands
 from discord.ext import commands
 from sqlalchemy import create_engine

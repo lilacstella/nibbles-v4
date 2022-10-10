@@ -4,17 +4,18 @@ from pathlib import Path
 
 from dotenv import dotenv_values
 
-to_sync = False
+to_sync = True
+
+
 # guild for testing
 @dataclass
 class guild:
     id: int
 
+
 # guilds = (guild(805821298193465384), guild(607298393370394625), guild(805821298193465384))
-guilds = (guild(805821298193465384), )
-# guilds = None
-
-
+# guilds = (guild(805821298193465384), )
+guilds = []
 
 project_path = Path(__file__).parent
 
