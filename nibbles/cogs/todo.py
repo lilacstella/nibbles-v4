@@ -91,7 +91,11 @@ class Todo(commands.GroupCog, group_name="todo"):
         name = interaction.user.display_name
         embed, task_list = todo_embed(interaction.user.id, name)
 
-        await interaction.send_message(content='Added to your to-do list!', embed=embed, view=MenuView(task_list))
+        await interaction.response.send_message(
+            content='Added to your to-do list!',
+            embed=embed,
+            view=MenuView(task_list)
+        )
 
 
 async def setup(client):
