@@ -1,4 +1,5 @@
 import asyncio
+import secrets
 from datetime import datetime, date, timedelta
 import time
 import threading
@@ -32,6 +33,11 @@ class Bot(commands.Bot):
                 print(await self.tree.sync(guild=_id))
         print("bot online")
 
+        if not change_status.is_running():
+            change_status.start()
+        else:
+            await client.change_presence(activity=discord.Game(name='rebooting...'))
+
         client.launch_midnight = threading.Thread(target=launch_tasks)
         if not client.launch_midnight.is_alive():
             client.launch_midnight.start()
@@ -39,6 +45,13 @@ class Bot(commands.Bot):
 
 client = Bot()
 # econ.init_db()
+
+@tasks.loop(minutes=12)
+async def change_status():
+    statuses = ['cookie nomming', 'sleeping', 'being a ball of fluff', 'wheel running',
+                'tunnel digging', 'wires nibbling', 'food stashing', 'treasure burying',
+                'grand adventure', 'collecting taxes']
+    await client.change_presence(activity=discord.Game(name=secrets.choice(statuses)))
 
 
 def launch_tasks():

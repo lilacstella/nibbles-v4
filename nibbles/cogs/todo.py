@@ -76,22 +76,22 @@ class Todo(commands.GroupCog, group_name="todo"):
         name="add",
         description='add an item to your to-do list!'
     )
-    async def todo_add(self, ctx: commands.Context, *, item: str):
+    async def todo_add(self, interaction: discord.Interaction, item: str):
         with TinyDB(todo_json) as db:
-            todo = db.search(Query().user == ctx.author.id)
+            todo = db.search(Query().user == interaction.user.id)
             if len(todo) != 0:
                 new_list = todo[0].get('todo')
                 if item in new_list:
-                    await ctx.send("You already have this task in your list!")
+                    await interaction.response.send_message("You already have this task in your list!")
                     return
                 new_list.append(item)
-                db.update({'user': ctx.author.id, 'todo': new_list}, Query().user == ctx.author.id)
+                db.update({'user': interaction.user.id, 'todo': new_list}, Query().user == interaction.user.id)
             else:
-                db.insert({'user': ctx.author.id, 'todo': [item]})
-        name = ctx.author.display_name
-        embed, task_list = todo_embed(ctx.author.id, name)
+                db.insert({'user': interaction.user.id, 'todo': [item]})
+        name = interaction.user.display_name
+        embed, task_list = todo_embed(interaction.user.id, name)
 
-        await ctx.send(content='Added to your to-do list!', embed=embed, view=MenuView(task_list))
+        await interaction.send_message(content='Added to your to-do list!', embed=embed, view=MenuView(task_list))
 
 
 async def setup(client):
