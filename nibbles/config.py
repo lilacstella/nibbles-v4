@@ -13,7 +13,7 @@ discord_token = _env["DISCORD_TOKEN"] # test or live token
 dbl_token = _env["DBL_TOKEN"]
 del _env
 
-to_sync = True # changes here
+to_sync = False # changes here
 
 # guild for testing
 @dataclass
