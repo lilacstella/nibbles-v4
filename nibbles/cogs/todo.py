@@ -52,7 +52,7 @@ def todo_embed(uid, author_name):
         embed = discord.Embed(title=title, colour=discord.Colour(0x24bdff), description=desc)
 
         embed.set_author(name=author_name)
-        # print(todo)
+
         return embed, todo
 
 
@@ -75,6 +75,9 @@ class Todo(commands.GroupCog, group_name="todo"):
     @discord.app_commands.command(
         name="add",
         description='add an item to your to-do list!'
+    )
+    @discord.app_commands.describe(
+        item="what would you like to add to your todo list"
     )
     async def todo_add(self, interaction: discord.Interaction, item: str):
         with TinyDB(todo_json) as db:

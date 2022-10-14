@@ -24,6 +24,7 @@ class Bot(commands.Bot):
         await self.load_extension('nibbles.cogs.econ')
         await self.load_extension('nibbles.cogs.todo')
         await self.load_extension('nibbles.cogs.remind')
+        await self.load_extension('nibbles.cogs.xp')
         await self.wait_until_ready()
 
         # set in config whether to sync
@@ -44,13 +45,12 @@ class Bot(commands.Bot):
 
 
 client = Bot()
-# econ.init_db()
 
 @tasks.loop(minutes=12)
 async def change_status():
     statuses = ['cookie nomming', 'sleeping', 'being a ball of fluff', 'wheel running',
-                'tunnel digging', 'wires nibbling', 'food stashing', 'treasure burying',
-                'grand adventure', 'collecting taxes']
+                'tunnel digging', 'wire nibbling', 'food stashing', 'treasure burying',
+                'grand adventure', 'collecting taxes', 'dust bathing', 'bit bothering', 'escaping']
     await client.change_presence(activity=discord.Game(name=secrets.choice(statuses)))
 
 
@@ -67,6 +67,10 @@ def daily_reset():
     econ = client.get_cog('Econ')
     if econ is not None:
         econ.spun_today = {}
+
+    xp = client.get_cog('XP')
+    if xp is not None:
+        xp.text = {}
     threading.Timer(60*60*24, daily_reset).start()
 
 
