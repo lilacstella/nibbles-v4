@@ -52,45 +52,54 @@ def todo_embed(uid, author_name):
         embed = discord.Embed(title=title, colour=discord.Colour(0x24bdff), description=desc)
 
         embed.set_author(name=author_name)
-        # print(todo)
+
         return embed, todo
 
 
-class Todo(commands.Cog):
+class Todo(commands.GroupCog, group_name="todo"):
 
     def __init__(self, client):
         self.client = client
 
-    @discord.app_commands.command(description='interact with your to-do list!')
+    @discord.app_commands.command(name='ls', description='interact with your to-do list!')
     async def todo(self, interaction: discord.Interaction):
         embed, task_list = todo_embed(interaction.user.id, interaction.user.display_name)
 
-        # if embed is not None:
-        #     await interaction.response.send_message(content=f"{name}'s to-do list", embed=embed, view=box)
-        # else:
-        # await interaction.response.send_message(content=f"{name} does not have a to-do list yet!", view=box)
-        await interaction.response.send_message(content=f"test", embed=embed, view=MenuView(task_list))
+        if embed is not None:
+            await interaction.response.send_message(embed=embed, view=MenuView(task_list))
+        else:
+            await interaction.response.send_message(
+                content=f"{interaction.user.display_name} does not have a to-do list yet!"
+            )
 
-    @commands.hybrid_command(
+    @discord.app_commands.command(
         name="add",
         description='add an item to your to-do list!'
     )
-    async def todo_add(self, ctx: commands.Context, *, item: str):
+    @discord.app_commands.describe(
+        item="what would you like to add to your todo list"
+    )
+    async def todo_add(self, interaction: discord.Interaction, item: str):
         with TinyDB(todo_json) as db:
-            todo = db.search(Query().user == ctx.author.id)
+            todo = db.search(Query().user == interaction.user.id)
             if len(todo) != 0:
                 new_list = todo[0].get('todo')
                 if item in new_list:
-                    await ctx.send("You already have this task in your list!")
+                    await interaction.response.send_message("You already have this task in your list!")
                     return
                 new_list.append(item)
-                db.update({'user': ctx.author.id, 'todo': new_list}, Query().user == ctx.author.id)
+                db.update({'user': interaction.user.id, 'todo': new_list}, Query().user == interaction.user.id)
             else:
-                db.insert({'user': ctx.author.id, 'todo': [item]})
-        name = ctx.author.display_name
-        embed, task_list = todo_embed(ctx.author.id, name)
+                db.insert({'user': interaction.user.id, 'todo': [item]})
+        name = interaction.user.display_name
+        embed, task_list = todo_embed(interaction.user.id, name)
 
-        await ctx.send(content='Added to your to-do list!', embed=embed, view=MenuView(task_list))
+        await interaction.response.send_message(
+            content='Added to your to-do list!',
+            embed=embed,
+            view=MenuView(task_list)
+        )
+
 
 async def setup(client):
     await client.add_cog(Todo(client))

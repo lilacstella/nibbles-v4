@@ -1,7 +1,11 @@
+import asyncio
 import secrets
+import threading
+from datetime import datetime
 
 import discord
 from discord.ext import commands
+
 
 from nibbles.config import guilds
 
@@ -32,10 +36,14 @@ class Reroll(discord.ui.Button):
         for _item in self.crossed:
             selected += f" ~~{_item}~~"
         self.crossed.append(chosen)
-        choice = [f'Nibbles thinks  __{selected}__  is the right option!', f'Of course __{selected}__ is the way to go!',
+        choice = [f'Nibbles thinks  __{selected}__  is the right option!',
+                  f'Of course __{selected}__ is the way to go!',
                   f"Nibbles thinks __{selected}__ is da best. It's tasty after all!",
                   f'After consulting my degree in Abstract Mathematics, Nibbles thinks __{selected}__ is the right choice.',
-                  f"Nibbles likes __{selected}__ because it has the most nom noms"]
+                  f"Nibbles likes __{selected}__ because it has the most nom noms",
+                  f"How about ... __{selected}__",
+                  f"Anything but __{selected}__!!!" if len(self.options) == 0 else
+                  f"Why would you choose {secrets.choice(self.options)}, choose __{selected}__!"]
         label = ""
         for _cur in self.options: label += _cur.strip() + ","
         label = label[:-1]
@@ -53,7 +61,6 @@ class Misc(commands.Cog):
 
     def __init__(self, client):
         self.client = client
-
     @commands.hybrid_command(
         name="choose",
         description="nibbles helps make your life decisions for you",
@@ -71,13 +78,17 @@ class Misc(commands.Cog):
         chosen = [f'Nibbles thinks  __{chosen}__  is the right option!', f'Of course __{chosen}__ is the way to go!',
                   f"Nibbles thinks __{chosen}__ is da best. It's tasty after all!",
                   f'After consulting my degree in Abstract Mathematics, Nibbles thinks __{chosen}__ is the right choice.',
-                  f"Nibbles likes __{chosen}__ because it has the most nom noms"]
+                  f"Nibbles likes __{chosen}__ because it has the most nom noms",
+                  f"How about ... __{chosen}__",
+                  f"Anything but __{chosen}__!!!" if len(choices) == 0 else
+                  f"Why would you choose {secrets.choice(choices)}, choose __{chosen}__!"]
 
         await ctx.send(secrets.choice(chosen), view=view)
 
     @commands.hybrid_command(
         name="size",
         description="find the number of human members",
+        guild_only=True,
         guilds=guilds
     )
     async def size(self, ctx: commands.Context):
@@ -100,8 +111,14 @@ class Misc(commands.Cog):
                 'My nom noms said yes.', 'Huh? What did you say?.',
                 'I\'m sleepy... ask later.', 'Its a secret hehe.',
                 'Nibbles thinks that is wrong.', 'My nom noms said no.',
-                'Nibbles disagree.', 'Noooooo!', 'That is incorrect.'
+                'Nibbles disagree.', 'Noooooo!', 'That is incorrect.',
+                'Wahhhhh I just fell asleep ask me later'
             ]
+            if message.guild.id == 912817672067088394:
+                eight_ball.append('idk ask nhwn')
+                eight_ball.append('idk ask arch man')
+                eight_ball.append('idk ask teddy')
+                eight_ball.append('idk ask rohan')
             await message.channel.send(secrets.choice(eight_ball))
 
 
