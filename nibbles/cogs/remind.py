@@ -31,6 +31,27 @@ logging.info(
 )
 
 
+class CancelRemind(discord.ui.Button):
+    def __init__(self, job_id, view: discord.ui.View):
+        self.job_id = job_id
+        super().__init__(
+            style=discord.ButtonStyle.danger,
+            custom_id="cancel",
+            emoji=discord.PartialEmoji.from_str('<:NibblesNo:869957380924928050>')
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        scheduler.remove_job(self.job_id)
+        self.view.clear_items()
+        await interaction.response.edit_message(content="this reminder was cancelled", view=self.view)
+
+
+class CancelView(discord.ui.View):
+    def __init__(self, job_id, timeout=1200):
+        super().__init__(timeout=timeout)
+        self.add_item(CancelRemind(job_id, self))
+
+
 class Remind(commands.Cog):
 
     def __init__(self, client: commands.Bot):
@@ -101,7 +122,7 @@ class Remind(commands.Cog):
             f"about: \n**{what}**."
         )
 
-        await interaction.response.send_message(message)
+        await interaction.response.send_message(message, view=CancelView(reminder.id))
 
 
 async def setup(client):
