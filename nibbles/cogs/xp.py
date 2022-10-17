@@ -16,19 +16,16 @@ class XP(commands.GroupCog, name="xp"):
         self.client = client
         self.voice = {}
         self.text = {}
-
-    @commands.Cog.listener()
-    async def on_ready(self):
         c = conn.cursor()
         for guild in self.client.guilds:
-            c.execute(f"CREATE TABLE IF NOT EXISTS ? (user_id INTEGER PRIMARY KEY, xp INTEGER)", (f's{guild.id}',))
+            c.execute(f"CREATE TABLE IF NOT EXISTS s{guild.id} (user_id INTEGER PRIMARY KEY, xp INTEGER)")
         conn.commit()
 
-    # when join server, make table for exp
+    # when join server, make table for xp
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
         c = conn.cursor()
-        c.execute(f"CREATE TABLE IF NOT EXISTS ? (user_id INTEGER PRIMARY KEY, xp INTEGER)", (f's{guild.id}',))
+        c.execute(f"CREATE TABLE IF NOT EXISTS s{guild.id} (user_id INTEGER PRIMARY KEY, xp INTEGER)")
         conn.commit()
 
     @commands.Cog.listener()
@@ -77,6 +74,19 @@ class XP(commands.GroupCog, name="xp"):
             # update bal and xp
             c.execute("UPDATE users SET bal = bal + ? WHERE user_id = ?", (val, member.id))
             c.execute(f"UPDATE s{member.guild.id} SET xp = xp + ? WHERE user_id = ?", (val, member.id))
+
+    @commands.command(
+        name='purge_guilds'
+    )
+    async def purge_guilds(self, ctx: commands.Context):
+        guilds = [x for x in self.client.guilds]
+        c = conn.cursor()
+        c.execute("SELECT name FROM sqlite_schema WHERE type='table'")
+        tables = c.fetchall()
+        for table in tables:
+            if int(table[0][1:]) not in guilds:
+                c.execute("DROP TABLE ?", (table[0]))
+        conn.commit()
 
     @app_commands.command(
         name='lb',
