@@ -87,7 +87,8 @@ class XP(commands.GroupCog, name="xp"):
         tables = c.fetchall()
         for table in tables:
             if int(table[0][1:]) not in guilds:
-                c.execute("DROP TABLE ?", (table[0]))
+                c.execute("DROP TABLE {table[0]}")
+                print(f'dropped {table[0]}')
         conn.commit()
 
     @app_commands.command(
