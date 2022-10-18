@@ -79,9 +79,11 @@ class XP(commands.GroupCog, name="xp"):
         name='purge_guilds'
     )
     async def purge_guilds(self, ctx: commands.Context):
+        if ctx.author.id != 513424144541417483:
+            return
         guilds = [x for x in self.client.guilds]
         c = conn.cursor()
-        c.execute("SELECT name FROM sqlite_schema WHERE type='table'")
+        c.execute("SELECT name FROM sqlite_master WHERE type='table'")
         tables = c.fetchall()
         for table in tables:
             if int(table[0][1:]) not in guilds:
