@@ -1,8 +1,15 @@
 # nibbles-v4
 
-## Secrets
-in secrets
-`DISCORD_TOKEN` and `DBL_TOKEN` in `.env` file in project directory
+## Config
+in nibbles/config:
+
+`DISCORD_TOKEN` and `DBL_TOKEN` in `tokens` file
+
+in `config`, the `config.toml` file specifies:
+
+ - `TOKEN` the name of the discord token in `tokens`
+ - `SYNC` whether to sync the commands to discord
+
 
 ## Databases
  - user.db

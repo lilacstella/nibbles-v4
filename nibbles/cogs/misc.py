@@ -52,7 +52,7 @@ class Reroll(discord.ui.Button):
 
 
 class RerollView(discord.ui.View):
-    def __init__(self, options: list, crossed: list, timeout=180):
+    def __init__(self, options: list, crossed: list, timeout=300):
         super().__init__(timeout=timeout)
         self.add_item(Reroll(options, crossed, self))
 

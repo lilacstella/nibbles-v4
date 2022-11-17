@@ -1,19 +1,20 @@
-from dataclasses import dataclass
 import sqlite3
+from dataclasses import dataclass
 from pathlib import Path
 
+import tomli
 from dotenv import dotenv_values
 
-
 project_path = Path(__file__).parent
+with open(project_path.joinpath('config').joinpath('config.toml'), 'rb') as f:
+    settings = tomli.load(f)
 
-# tokens <- testing change here
-_env = dotenv_values(project_path.joinpath("secrets").joinpath("tokens"))
-discord_token = _env["DISCORD_TOKEN"] # test or live token
-dbl_token = _env["DBL_TOKEN"]
+_env = dotenv_values(project_path.joinpath("config").joinpath("tokens"))
+discord_token = _env[settings['TOKEN']]
 del _env
 
-to_sync = False # changes here
+to_sync = settings['SYNC']
+
 
 # guild for testing
 @dataclass
@@ -21,10 +22,10 @@ class guild:
     id: int
 
 
-# guilds = (guild(805821298193465384), guild(607298393370394625), guild(805821298193465384))
-guilds = (guild(805821298193465384), )
-# guilds = []
-
+if (settings['TOKEN'] == 'TEST_TOKEN'):
+    guilds = (guild(805821298193465384),)
+else:
+    guilds = []
 
 # databases
 user_db = sqlite3.connect(project_path.joinpath("db").joinpath("user.db"))

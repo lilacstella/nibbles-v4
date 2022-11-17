@@ -1,8 +1,7 @@
 import asyncio
 import secrets
-from datetime import datetime, date, timedelta
-import time
 import threading
+from datetime import datetime, date, timedelta
 
 import discord
 from discord.ext import commands, tasks
@@ -12,6 +11,7 @@ from nibbles.config import guilds, discord_token, to_sync
 """
 Define Bot Attributes
 """
+
 
 class Bot(commands.Bot):
     def __init__(self):
@@ -46,6 +46,7 @@ class Bot(commands.Bot):
 
 client = Bot()
 
+
 @tasks.loop(minutes=12)
 async def change_status():
     statuses = ['cookie nomming', 'sleeping', 'being a ball of fluff', 'wheel running',
@@ -63,6 +64,7 @@ def launch_tasks():
     print(f'{midnight_time / 3600} hours until tasks launch')
     threading.Timer(midnight_time, daily_reset).start()
 
+
 def daily_reset():
     econ = client.get_cog('Econ')
     if econ is not None:
@@ -71,7 +73,7 @@ def daily_reset():
     xp = client.get_cog('XP')
     if xp is not None:
         xp.text = {}
-    threading.Timer(60*60*24, daily_reset).start()
+    threading.Timer(60 * 60 * 24, daily_reset).start()
 
 
 @client.event
@@ -79,5 +81,6 @@ async def on_message(message):
     ctx = await client.get_context(message)
     if ctx.valid:
         await client.process_commands(message)
+
 
 client.run(discord_token)

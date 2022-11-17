@@ -35,6 +35,7 @@ class XP(commands.GroupCog, name="xp"):
         user_id = message.author.id
         val = random.randrange(25, 43)
         c = conn.cursor()
+        c.execute(f"CREATE TABLE IF NOT EXISTS s{message.guild.id} (user_id INTEGER PRIMARY KEY, xp INTEGER)")
         # if bal does not exist, add user
         c.execute(f"INSERT OR IGNORE INTO users VALUES (?, 0, 160, '', '')", (user_id,))
         # if xp does not exist, add xp table and user
@@ -86,8 +87,8 @@ class XP(commands.GroupCog, name="xp"):
         c.execute("SELECT name FROM sqlite_master WHERE type='table'")
         tables = c.fetchall()
         for table in tables:
-            if int(table[0][1:]) not in guilds:
-                c.execute("DROP TABLE {table[0]}")
+            if table[0] not in ('users', 'sqlite_master') and int(table[0][1:]) not in guilds:
+                c.execute(f"DROP TABLE {table[0]}")
                 print(f'dropped {table[0]}')
         conn.commit()
 
