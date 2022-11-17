@@ -41,6 +41,10 @@ class CancelRemind(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
+        _job = scheduler.get_job(self.job_id)
+        if not hasattr(_job, 'kwargs') or interaction.user.id != _job.kwargs['author_id']:
+            await interaction.response.defer()
+            return
         scheduler.remove_job(self.job_id)
         self.view.clear_items()
         await interaction.response.edit_message(content="this reminder was cancelled", view=self.view)
