@@ -13,6 +13,9 @@ class AddChannel(discord.ui.Button):
                          custom_id="add_channel")
 
     async def callback(self, interaction: discord.Interaction):
+        if not interaction.permissions.manage_guild:
+            await interaction.response.defer()
+            return
         c = conn.cursor()
         c.execute("UPDATE servers SET birthday = ? WHERE guild = ?", (interaction.channel_id, interaction.guild_id))
         conn.commit()
@@ -25,6 +28,9 @@ class RemoveChannel(discord.ui.Button):
                          custom_id="remove_channel")
 
     async def callback(self, interaction: discord.Interaction):
+        if not interaction.permissions.manage_guild:
+            await interaction.response.defer()
+            return
         c = conn.cursor()
         c.execute("UPDATE servers SET birthday = -1 WHERE guild = ?", (interaction.guild_id,))
         conn.commit()
@@ -53,8 +59,10 @@ class ServerConfig(commands.Cog):
         self.client.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
         self.birthday_check.cancel()
 
-    @app_commands.checks.has_permissions(manage_guild=True)
     async def settings(self, interaction: discord.Interaction, message: discord.Message) -> None:
+        if not interaction.permissions.manage_guild:
+            await interaction.response.send_message("You do not have permissions to change this!")
+            return
         c = conn.cursor()
         c.execute("SELECT count(*) FROM servers WHERE guild = ?", (message.guild.id,))
         exists = c.fetchone()[0]
