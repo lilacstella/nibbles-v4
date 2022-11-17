@@ -30,6 +30,7 @@ else:
 # databases
 user_db = sqlite3.connect(project_path.joinpath("db").joinpath("user.db"))
 todo_json = project_path.joinpath("db").joinpath("todo.json")
+servers_db = sqlite3.connect(project_path.joinpath("db").joinpath("servers.db"))
 """ genshin info """
 # banner_info_txt = project_path.joinpath("db").joinpath("banner_info.txt")
 # char_db = sqlite3.connect(project_path.joinpath("db").joinpath("char.db"))

@@ -25,6 +25,7 @@ class Bot(commands.Bot):
         await self.load_extension('nibbles.cogs.todo')
         await self.load_extension('nibbles.cogs.remind')
         await self.load_extension('nibbles.cogs.xp')
+        await self.load_extension('nibbles.cogs.server_config')
         await self.wait_until_ready()
 
         # set in config whether to sync
@@ -38,6 +39,9 @@ class Bot(commands.Bot):
             change_status.start()
         else:
             await client.change_presence(activity=discord.Game(name='rebooting...'))
+
+        if not client.get_cog('ServerConfig').birthday_check.is_running():
+            client.get_cog('ServerConfig').birthday_check.start()
 
         client.launch_midnight = threading.Thread(target=launch_tasks)
         if not client.launch_midnight.is_alive():
@@ -64,7 +68,6 @@ def launch_tasks():
     print(f'{midnight_time / 3600} hours until tasks launch')
     threading.Timer(midnight_time, daily_reset).start()
 
-
 def daily_reset():
     econ = client.get_cog('Econ')
     if econ is not None:
@@ -73,6 +76,7 @@ def daily_reset():
     xp = client.get_cog('XP')
     if xp is not None:
         xp.text = {}
+
     threading.Timer(60 * 60 * 24, daily_reset).start()
 
 
