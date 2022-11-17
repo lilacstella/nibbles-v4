@@ -96,7 +96,6 @@ class XP(commands.GroupCog, name="xp"):
         name='lb',
         description='check the top ten people with the highest points!'
     )
-    @app_commands.guilds(guilds[0])
     @app_commands.guild_only()
     async def lb(self, interaction: discord.Interaction):
         c = conn.cursor()
@@ -126,7 +125,6 @@ class XP(commands.GroupCog, name="xp"):
     @app_commands.describe(
         user='whose rank would you like to look up?'
     )
-    @app_commands.guilds(guilds[0])
     @app_commands.guild_only()
     async def rank(self, interaction: discord.Interaction, user: discord.Member = None):
         user_id = interaction.user.id if user is None else user.id
