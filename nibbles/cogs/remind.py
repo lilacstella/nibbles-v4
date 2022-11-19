@@ -71,8 +71,8 @@ class Remind(commands.Cog):
         tz = pytz.timezone(config_timezone)
         # Get today's date in the current time zone (i.e local time)
         # note time() without arguments will result to midnight
-        # midnight_local = datetime.combine(date.today(), datetime.min.time())
-        midnight_local = datetime.now() + timedelta(seconds=15) # test start in 15s
+        midnight_local = datetime.combine(date.today(), datetime.min.time())
+        # midnight_local = datetime.now() + timedelta(seconds=15) # test start in 15s
         # convert this midnight datetime to the midnight datetime
         # in the given time zone. In this case autralia time zone
         midnight = tz.localize(midnight_local)
