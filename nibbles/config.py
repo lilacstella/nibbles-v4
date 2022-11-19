@@ -38,7 +38,7 @@ servers_db = sqlite3.connect(project_path.joinpath("db").joinpath("servers.db"))
 # pity_db = sqlite3.connect(project_path.joinpath("db").joinpath("pity.db"))
 
 """job scheduling"""
-jobs_db = f'sqlite:///{Path("nibbles").joinpath("db").joinpath("jobs.sqlite")}'
+jobs_db = f'sqlite:///{Path("nibbles").joinpath("db").joinpath("jobs.db")}'
 config_timezone = 'US/Central'
 log_level = 'INFO'
 

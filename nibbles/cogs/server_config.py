@@ -1,11 +1,9 @@
-from datetime import datetime
-
 import discord
 from discord import app_commands
 from discord.ext import commands
 
 from nibbles.config import servers_db as conn
-from nibbles.config import user_db
+
 
 class AddChannel(discord.ui.Button):
     def __init__(self):
@@ -50,11 +48,6 @@ class ServerConfig(commands.Cog):
         self.ctx_menu = app_commands.ContextMenu(name="Server Configuration", callback=self.settings)
         self.client.tree.add_command(self.ctx_menu)
 
-    @discord.ext.tasks.loop(hours=24)
-    async def birthday_check(self):
-        for birthday in await self.birthday_channels():
-            await self.birthday(*birthday)
-
     async def cog_unload(self):
         self.client.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
         self.birthday_check.cancel()
@@ -84,34 +77,6 @@ class ServerConfig(commands.Cog):
         embed = discord.Embed(title="Server Settings", description=desc)
 
         msg = await interaction.response.send_message(embed=embed, view=SelectChannelsView())
-
-    async def birthday_channels(self):
-        today = datetime.now().strftime("%m/%d")
-        birthdays = []
-        cursor = user_db.cursor()
-        cursor.execute("SELECT user_id FROM users WHERE birthday = ?", (today,))
-        birthday_ppl = cursor.fetchall()
-        for birthday_boi in birthday_ppl:
-            channels = []
-            for ch_id in self._retrieve_subscriptions('birthday'):
-                try:
-                    channel = await self.client.get_channel(ch_id[0])
-                except (discord.Forbidden, discord.NotFound):
-                    continue
-                user = self.client.get_user(birthday_boi[0])
-                if user in channel.members and channel.guild.me.guild_permissions.send_messages:
-                    channels.append(channel)
-            birthdays.append((birthday_boi[0], channels))
-        return birthdays
-
-    async def birthday(self, user, channels):
-        # function called for every user's birthday
-        if len(channels) == 0:
-            return
-        mention = channels[0].guild.get_member(user).mention
-        for channel in channels:
-            await channel.send(f"Happy birthday to {mention}!!! "
-                               f"<:NibblesCheer:869948008115109928><:NibblesCheer:869948008115109928>")
 
 
 async def setup(client):
