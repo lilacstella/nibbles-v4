@@ -2,7 +2,7 @@
 __pycache__/
 venv/
 
-nibbles/secrets/
+nibbles/config/
 
 nibbles/db/
 !nibbles/db/characters.db

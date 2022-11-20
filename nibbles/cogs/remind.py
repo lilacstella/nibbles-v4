@@ -1,18 +1,30 @@
-import logging
+from datetime import datetime, timedelta, date
 
 import dateparser
 import discord
 import pytz
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
 from discord import app_commands
 from discord.ext import commands
-from sqlalchemy import create_engine
 
-from nibbles.config import jobs_db, log_level, config_timezone
+from nibbles.config import jobs_db, log_level, config_timezone, user_db, servers_db
+
+import pytz
+import logging
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from sqlalchemy import create_engine
 
 # Advanced Python Scheduler
 engine = create_engine(jobs_db)
+
+logging.basicConfig(level=logging.getLevelName(log_level))
+logging.info(
+    f"\nsqlite_location = {jobs_db}\n"
+    f"config_timezone = {config_timezone}\n"
+    f"log_level = {log_level}3x6XGMFw4bF9Ch"
+)
+
 jobstores = {"default": SQLAlchemyJobStore(engine=engine)}
 job_defaults = {"coalesce": True}
 scheduler = AsyncIOScheduler(
@@ -23,18 +35,55 @@ scheduler = AsyncIOScheduler(
 
 scheduler.start()
 
-logging.basicConfig(level=logging.getLevelName(log_level))
-logging.info(
-    f"\nsqlite_location = {jobs_db}\n"
-    f"config_timezone = {config_timezone}\n"
-    f"log_level = {log_level}3x6XGMFw4bF9Ch"
-)
+
+class CancelRemind(discord.ui.Button):
+    def __init__(self, job_id, view: discord.ui.View):
+        self.job_id = job_id
+        super().__init__(
+            style=discord.ButtonStyle.danger,
+            custom_id="cancel",
+            emoji=discord.PartialEmoji.from_str('<:NibblesNo:869957380924928050>')
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        _job = scheduler.get_job(self.job_id)
+        if not hasattr(_job, 'kwargs') or interaction.user.id != _job.kwargs['author_id']:
+            await interaction.response.defer()
+            return
+        scheduler.remove_job(self.job_id)
+        self.view.clear_items()
+        await interaction.response.edit_message(content="this reminder was cancelled", view=self.view)
+
+
+class CancelView(discord.ui.View):
+    def __init__(self, job_id, timeout=1200):
+        super().__init__(timeout=timeout)
+        self.add_item(CancelRemind(job_id, self))
 
 
 class Remind(commands.Cog):
 
     def __init__(self, client: commands.Bot):
         self.client = client
+
+    def birthday_start(self):
+        # set time zone
+        tz = pytz.timezone(config_timezone)
+        # Get today's date in the current time zone (i.e local time)
+        # note time() without arguments will result to midnight
+        midnight_local = datetime.combine(date.today(), datetime.min.time())
+        # midnight_local = datetime.now() + timedelta(seconds=15) # test start in 15s
+        # convert this midnight datetime to the midnight datetime
+        # in the given time zone. In this case autralia time zone
+        midnight = tz.localize(midnight_local)
+        scheduler.add_job(
+            birthday_check,
+            'interval',
+            hours=24,
+            start_date=midnight,
+            timezone=config_timezone
+        )
+        print(midnight)
 
     @app_commands.command(
         name="remindme",
@@ -101,7 +150,7 @@ class Remind(commands.Cog):
             f"about: \n**{what}**."
         )
 
-        await interaction.response.send_message(message)
+        await interaction.response.send_message(message, view=CancelView(reminder.id))
 
 
 async def setup(client):
@@ -125,3 +174,45 @@ async def send_to_discord(channel_id: int, message: str, author_id: int):
         await bot.get_user(author_id).send(f"hi <@{author_id}> you told me to remind you {message} ")
     else:
         await channel.send(f"hi <@{author_id}> you told me to remind you {message}")
+
+
+async def birthday_channels():
+    def _retrieve_subscriptions():
+        c = servers_db.cursor()
+        c.execute(f'SELECT birthday, guild FROM servers')
+        arr = c.fetchall()
+        arr = list(filter(lambda a: a[0] != -1, arr))
+        return [temp for temp in arr if any([x.id == temp[1] for x in bot.guilds])]
+
+    today = datetime.now().strftime("%m/%d")
+    birthdays = []
+    cursor = user_db.cursor()
+    cursor.execute("SELECT user_id FROM users WHERE birthday = ?", (today,))
+    birthday_ppl = cursor.fetchall()
+    for birthday_boi in birthday_ppl:
+        channels = []
+        for ch_id in _retrieve_subscriptions():
+            try:
+                channel = bot.get_channel(ch_id[0])
+            except (discord.Forbidden, discord.NotFound):
+                continue
+            user = bot.get_user(birthday_boi[0])
+            if user in channel.members and channel.guild.me.guild_permissions.send_messages:
+                channels.append(channel)
+        birthdays.append((birthday_boi[0], channels))
+    return birthdays
+
+
+async def birthday(user, channels):
+    # function called for every user's birthday
+    if len(channels) == 0:
+        return
+    mention = channels[0].guild.get_member(user).mention
+    for channel in channels:
+        await channel.send(f"Happy birthday to {mention}!!! "
+                           f"<:NibblesCheer:869948008115109928><:NibblesCheer:869948008115109928>")
+
+
+async def birthday_check():
+    for bd in await birthday_channels():
+        await birthday(*bd)

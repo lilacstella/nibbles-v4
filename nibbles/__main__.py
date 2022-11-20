@@ -1,8 +1,7 @@
 import asyncio
 import secrets
-from datetime import datetime, date, timedelta
-import time
 import threading
+from datetime import datetime, date, timedelta
 
 import discord
 from discord.ext import commands, tasks
@@ -12,6 +11,7 @@ from nibbles.config import guilds, discord_token, to_sync
 """
 Define Bot Attributes
 """
+
 
 class Bot(commands.Bot):
     def __init__(self):
@@ -25,6 +25,7 @@ class Bot(commands.Bot):
         await self.load_extension('nibbles.cogs.todo')
         await self.load_extension('nibbles.cogs.remind')
         await self.load_extension('nibbles.cogs.xp')
+        await self.load_extension('nibbles.cogs.server_config')
         await self.wait_until_ready()
 
         # set in config whether to sync
@@ -43,8 +44,8 @@ class Bot(commands.Bot):
         if not client.launch_midnight.is_alive():
             client.launch_midnight.start()
 
-
 client = Bot()
+
 
 @tasks.loop(minutes=12)
 async def change_status():
@@ -53,11 +54,15 @@ async def change_status():
                 'grand adventure', 'collecting taxes', 'dust bathing', 'bit bothering', 'escaping']
     await client.change_presence(activity=discord.Game(name=secrets.choice(statuses)))
 
+@client.command(name='birthday')
+async def start_birthday(ctx):
+    if ctx.author.id == 513424144541417483:
+        client.get_cog('Remind').birthday_start()
 
 def launch_tasks():
     asyncio.set_event_loop(client.loop)
     now = datetime.now()
-    midnight = datetime.combine(date.today() + timedelta(days=1), datetime.min.time()) + timedelta(hours=9)
+    midnight = datetime.combine(date.today() + timedelta(days=1), datetime.min.time()) + timedelta(hours=8)
     tdelta = midnight - now
     midnight_time = tdelta.total_seconds() % (24 * 3600)
     print(f'{midnight_time / 3600} hours until tasks launch')
@@ -71,13 +76,14 @@ def daily_reset():
     xp = client.get_cog('XP')
     if xp is not None:
         xp.text = {}
-    threading.Timer(60*60*24, daily_reset).start()
 
+    threading.Timer(60 * 60 * 24, daily_reset).start()
 
 @client.event
 async def on_message(message):
     ctx = await client.get_context(message)
     if ctx.valid:
         await client.process_commands(message)
+
 
 client.run(discord_token)
