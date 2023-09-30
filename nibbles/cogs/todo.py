@@ -45,10 +45,10 @@ class TextBox(discord.ui.Modal, title="Add a task to your to do list"):
                 if item in new_list:
                     await interaction.response.edit_message(content="You already have this task in your list!")
                     return
-                new_list.append(item)
+                new_list.append(item.strip())
                 db.update({'user': interaction.user.id, 'todo': new_list}, Query().user == interaction.user.id)
             else:
-                db.insert({'user': interaction.user.id, 'todo': [item]})
+                db.insert({'user': interaction.user.id, 'todo': [item.strip()]})
         name = interaction.user.display_name
         embed, task_list = todo_embed(interaction.user.id, name)
 
