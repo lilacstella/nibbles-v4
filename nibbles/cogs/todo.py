@@ -7,7 +7,7 @@ from nibbles.config import todo_json
 
 class Menu(discord.ui.Select):
     def __init__(self, task_list):
-        super().__init__(placeholder="What to check off?", custom_id="todo_check")
+        super().__init__(placeholder="What to check off?", custom_id="todo_check", row=0)
         self.response = None
         if len(task_list) == 0:
             self.add_option(label="You have finished everything!", default=True)
@@ -60,7 +60,7 @@ class TextBox(discord.ui.Modal, title="Add a task to your to do list"):
 
 class Add(discord.ui.Button):
     def __init__(self):
-        super().__init__(emoji="➕", style=discord.ButtonStyle.primary, custom_id="todo_add")
+        super().__init__(emoji="➕", style=discord.ButtonStyle.primary, custom_id="todo_add", row=1)
         # make add button that will produce a modal
 
     async def callback(self, interaction: discord.Interaction):
